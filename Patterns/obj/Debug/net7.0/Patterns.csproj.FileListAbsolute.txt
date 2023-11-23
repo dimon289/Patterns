@@ -1,0 +1,15 @@
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Patterns.exe
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Patterns.deps.json
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Patterns.runtimeconfig.json
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Patterns.dll
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Patterns.pdb
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.csproj.AssemblyReference.cache
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.AssemblyInfoInputs.cache
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.AssemblyInfo.cs
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.csproj.CoreCompileInputs.cache
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.dll
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\refint\Patterns.dll
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.pdb
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.genruntimeconfig.cache
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\ref\Patterns.dll
