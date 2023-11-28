@@ -1,58 +1,76 @@
 ﻿using System;
 
-// Приклад реалізації Factory Method
-public abstract class AbstractPhone
+// Приклад реалізації Abstract Factory
+public interface ITouchScreen
 {
-    public abstract void PlayMusic(string songName);
-    public abstract void StopMusic();
+    string ModelName();
 }
 
-public class Samson : AbstractPhone
+public interface IPushButton
 {
-    override public void PlayMusic(string songName) { /* реалізація */ }
-    override public void StopMusic() { /* реалізація */ }
+    string ModelName();
 }
 
-public class Nokla : AbstractPhone
+// Реалізація конкретних продуктів
+public class Nokia6 : ITouchScreen
 {
-    public override void PlayMusic(string songName) { /* реалізація */ }
-    public override void StopMusic() { /* реалізація */ }
+    public string ModelName() { return "Nokia 6 Model"; }
 }
 
-// Інші класи та реалізації
-
-class Program
+public class Guru1200 : IPushButton
 {
-    static void Main()
+    public string ModelName() { return "Guru1200 Model"; }
+}
+
+// Абстрактна фабрика
+public interface IMobilePhoneFactory
+{
+    ITouchScreen CreateTouchScreen();
+    IPushButton CreatePushButton();
+}
+
+// Конкретна реалізація абстрактної фабрики
+public class NokiaFactory : IMobilePhoneFactory
+{
+    public ITouchScreen CreateTouchScreen()
     {
-        // Створення об'єкта класу, що використовує Factory Method
-        AbstractPhone phone;
+        return new Nokia6();
+    }
 
-        // Вибір конкретного телефону (Samson або Nokla) за допомогою Factory Method
-        Console.Write("Виберіть телефон (Samson або Nokla): ");
-        string phoneType = Console.ReadLine();
-
-        switch (phoneType.ToLower())
-        {
-            case "samson":
-                phone = new Samson();
-                break;
-
-            case "nokla":
-                phone = new Nokla();
-                break;
-
-            default:
-                Console.WriteLine("Невірний вибір!");
-                return;
-        }
-
-        // Використання створеного телефону
-        Console.WriteLine($"Вибраний телефон: {phoneType}");
-        phone.PlayMusic("Some Song"); // Відтворення музики
-        phone.StopMusic(); // Зупинка музики
-
-        Console.ReadLine(); // Зупинка для перегляду результату
+    public IPushButton CreatePushButton()
+    {
+        return new Guru1200();
     }
 }
 
+// Клас, який використовує фабрику
+public class Client
+{
+    private ITouchScreen _touchScreen;
+    private IPushButton _pushButton;
+
+    public Client(IMobilePhoneFactory factory)
+    {
+        _touchScreen = factory.CreateTouchScreen();
+        _pushButton = factory.CreatePushButton();
+    }
+
+    public void UsePhone()
+    {
+        Console.WriteLine($"Touch Screen Model: {_touchScreen.ModelName()}");
+        Console.WriteLine($"Push Button Model: {_pushButton.ModelName()}");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Створення фабрики конкретного виробника (наприклад, Nokia)
+        IMobilePhoneFactory nokiaFactory = new NokiaFactory();
+
+        // Клієнт використовує фабрику для створення об'єктів
+        Client client = new Client(nokiaFactory);
+        client.UsePhone();
+    }
+}
