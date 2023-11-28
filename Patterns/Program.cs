@@ -1,47 +1,58 @@
 ﻿using System;
 
-public sealed class LoadBalancer
+// Приклад реалізації Factory Method
+public abstract class AbstractPhone
 {
-    private static readonly Lazy<LoadBalancer> _instance = new(() => new LoadBalancer());
-    private bool _isOnline;
-
-    private LoadBalancer()
-    {
-        // Ініціалізація класу
-        _isOnline = false;
-    }
-
-    public static LoadBalancer Instance
-    {
-        get { return _instance.Value; }
-    }
-
-    public bool IsOnline
-    {
-        get { return _isOnline; }
-    }
-
-    public void SetOnlineStatus(bool isOnline)
-    {
-        _isOnline = isOnline;
-        Console.WriteLine($"Web server is {(isOnline ? "online" : "offline")}");
-    }
+    public abstract void PlayMusic(string songName);
+    public abstract void StopMusic();
 }
+
+public class Samson : AbstractPhone
+{
+    override public void PlayMusic(string songName) { /* реалізація */ }
+    override public void StopMusic() { /* реалізація */ }
+}
+
+public class Nokla : AbstractPhone
+{
+    public override void PlayMusic(string songName) { /* реалізація */ }
+    public override void StopMusic() { /* реалізація */ }
+}
+
+// Інші класи та реалізації
 
 class Program
 {
     static void Main()
     {
-        // Клієнтський код
-        LoadBalancer loadBalancer1 = LoadBalancer.Instance;
-        LoadBalancer loadBalancer2 = LoadBalancer.Instance;
+        // Створення об'єкта класу, що використовує Factory Method
+        AbstractPhone phone;
 
-        Console.WriteLine($"Are both instances the same? {loadBalancer1 == loadBalancer2}");
+        // Вибір конкретного телефону (Samson або Nokla) за допомогою Factory Method
+        Console.Write("Виберіть телефон (Samson або Nokla): ");
+        string phoneType = Console.ReadLine();
 
-        // Зміна статусу сервера через будь-який екземпляр класу
-        loadBalancer1.SetOnlineStatus(true);
+        switch (phoneType.ToLower())
+        {
+            case "samson":
+                phone = new Samson();
+                break;
 
-        // Перевірка статусу через інший екземпляр класу
-        Console.WriteLine($"Is the server online? {loadBalancer2.IsOnline}");
+            case "nokla":
+                phone = new Nokla();
+                break;
+
+            default:
+                Console.WriteLine("Невірний вибір!");
+                return;
+        }
+
+        // Використання створеного телефону
+        Console.WriteLine($"Вибраний телефон: {phoneType}");
+        phone.PlayMusic("Some Song"); // Відтворення музики
+        phone.StopMusic(); // Зупинка музики
+
+        Console.ReadLine(); // Зупинка для перегляду результату
     }
 }
+
