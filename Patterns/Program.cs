@@ -1,88 +1,80 @@
-﻿public abstract class Message
+﻿// Спільний інтерфейс
+public interface IComponent
 {
-    public IMessageSender MessageSender { get; set; }
-    public string Subject { get; set; }
-    public string Body { get; set; }
-    public abstract void Send();
+    string Name { get; set; }
+    int Quantity { get; set; }
+    double GetCost();
 }
 
-public class SystemMessage : Message
+// Окремий компонент
+public class Part : IComponent
 {
-    public override void Send()
+    public string Name { get; set; }
+    public int Quantity { get; set; }
+    public double Cost { get; set; }
+
+    public Part(string name, int quantity, double cost)
     {
-        MessageSender.SendMessage(Subject, Body);
+        Name = name;
+        Quantity = quantity;
+        Cost = cost;
     }
+
+    public double GetCost() => Cost * Quantity;
 }
 
-public class UserMessage : Message
+// Композитний компонент
+public class Assembly : IComponent
 {
-    public string UserComments { get; set; }
+    public string Name { get; set; }
+    public int Quantity { get; set; }
 
-    public override void Send()
+    private readonly List<IComponent> _components = new();
+
+    public Assembly(string name, int quantity, IEnumerable<IComponent> components)
     {
-        string fullBody = string.Format("{0}\nUser Comments: {1}", Body, UserComments);
-        MessageSender.SendMessage(Subject, fullBody);
+        Name = name;
+        Quantity = quantity;
+        _components.AddRange(components);
     }
+
+    public double GetCost() => _components.Sum(component => component.GetCost());
 }
 
-public interface IMessageSender
+// Клієнт
+public class Program
 {
-    void SendMessage(string subject, string body);
-}
-
-public class EmailSender : IMessageSender
-{
-    public void SendMessage(string subject, string body)
+    public static void Main(string[] args)
     {
-        Console.WriteLine("Email\n{0}\n{1}\n", subject, body);
-    }
-}
 
-public class MSMQSender : IMessageSender
-{
-    public void SendMessage(string subject, string body)
-    {
-        Console.WriteLine("MSMQ\n{0}\n{1}\n", subject, body);
-    }
-}
+        // Частини
+        var engine = new Part("Двигун", 1, 5000.0);
+        var tires = new Part("Шини", 4, 1000.0);
 
-public class WebServiceSender : IMessageSender
-{
-    public void SendMessage(string subject, string body)
-    {
-        Console.WriteLine("Web Service\n{0}\n{1}\n", subject, body);
-    }
-}
+        // Збірка
+        var body = new Assembly(
+            "Кузов",
+            1,
+            new List<IComponent> {
+                new Part("Рама", 1, 2000.0),
+                new Part("Двері", 4, 1000.0),
+                new Part("Вікна", 6, 500.0)
+            }
+        );
 
-class Program
-{
-    static void Main(string[] args)
-    {
-        IMessageSender email = new EmailSender();
-        IMessageSender queue = new MSMQSender();
-        IMessageSender web = new WebServiceSender();
+        // Автомобіль
+        var car = new Assembly(
+            "Автомобіль",
+            1,
+            new List<IComponent> {
+                engine,
+                tires,
+                body
+        });
 
-        Message message = new SystemMessage();
-        message.Subject = "Test Message";
-        message.Body = "Hi, This is a Test Message";
+        // Розрахунок вартості автомобіля
+        var carCost = car.GetCost();
 
-        message.MessageSender = email;
-        message.Send();
-
-        message.MessageSender = queue;
-        message.Send();
-
-        message.MessageSender = web;
-        message.Send();
-
-        UserMessage usermsg = new UserMessage();
-        usermsg.Subject = "Test Message";
-        usermsg.Body = "Hi, This is a Test Message";
-        usermsg.UserComments = "I hope you are well";
-
-        usermsg.MessageSender = email;
-        usermsg.Send();
-
-        Console.ReadKey();
+        Console.WriteLine($"Вартість автомобіля: {carCost:C}");
     }
 }
