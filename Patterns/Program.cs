@@ -1,64 +1,56 @@
-﻿using System;
-
-// Приклад реалізації Abstract Factory
-public interface ITouchScreen
+﻿public abstract class Message
 {
-    string ModelName();
+    public IMessageSender MessageSender { get; set; }
+    public string Subject { get; set; }
+    public string Body { get; set; }
+    public abstract void Send();
 }
 
-public interface IPushButton
+public class SystemMessage : Message
 {
-    string ModelName();
-}
-
-// Реалізація конкретних продуктів
-public class Nokia6 : ITouchScreen
-{
-    public string ModelName() { return "Nokia 6 Model"; }
-}
-
-public class Guru1200 : IPushButton
-{
-    public string ModelName() { return "Guru1200 Model"; }
-}
-
-// Абстрактна фабрика
-public interface IMobilePhoneFactory
-{
-    ITouchScreen CreateTouchScreen();
-    IPushButton CreatePushButton();
-}
-
-// Конкретна реалізація абстрактної фабрики
-public class NokiaFactory : IMobilePhoneFactory
-{
-    public ITouchScreen CreateTouchScreen()
+    public override void Send()
     {
-        return new Nokia6();
-    }
-
-    public IPushButton CreatePushButton()
-    {
-        return new Guru1200();
+        MessageSender.SendMessage(Subject, Body);
     }
 }
 
-// Клас, який використовує фабрику
-public class Client
+public class UserMessage : Message
 {
-    private ITouchScreen _touchScreen;
-    private IPushButton _pushButton;
+    public string UserComments { get; set; }
 
-    public Client(IMobilePhoneFactory factory)
+    public override void Send()
     {
-        _touchScreen = factory.CreateTouchScreen();
-        _pushButton = factory.CreatePushButton();
+        string fullBody = string.Format("{0}\nUser Comments: {1}", Body, UserComments);
+        MessageSender.SendMessage(Subject, fullBody);
     }
+}
 
-    public void UsePhone()
+public interface IMessageSender
+{
+    void SendMessage(string subject, string body);
+}
+
+public class EmailSender : IMessageSender
+{
+    public void SendMessage(string subject, string body)
     {
-        Console.WriteLine($"Touch Screen Model: {_touchScreen.ModelName()}");
-        Console.WriteLine($"Push Button Model: {_pushButton.ModelName()}");
+        Console.WriteLine("Email\n{0}\n{1}\n", subject, body);
+    }
+}
+
+public class MSMQSender : IMessageSender
+{
+    public void SendMessage(string subject, string body)
+    {
+        Console.WriteLine("MSMQ\n{0}\n{1}\n", subject, body);
+    }
+}
+
+public class WebServiceSender : IMessageSender
+{
+    public void SendMessage(string subject, string body)
+    {
+        Console.WriteLine("Web Service\n{0}\n{1}\n", subject, body);
     }
 }
 
@@ -66,11 +58,31 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Створення фабрики конкретного виробника (наприклад, Nokia)
-        IMobilePhoneFactory nokiaFactory = new NokiaFactory();
+        IMessageSender email = new EmailSender();
+        IMessageSender queue = new MSMQSender();
+        IMessageSender web = new WebServiceSender();
 
-        // Клієнт використовує фабрику для створення об'єктів
-        Client client = new Client(nokiaFactory);
-        client.UsePhone();
+        Message message = new SystemMessage();
+        message.Subject = "Test Message";
+        message.Body = "Hi, This is a Test Message";
+
+        message.MessageSender = email;
+        message.Send();
+
+        message.MessageSender = queue;
+        message.Send();
+
+        message.MessageSender = web;
+        message.Send();
+
+        UserMessage usermsg = new UserMessage();
+        usermsg.Subject = "Test Message";
+        usermsg.Body = "Hi, This is a Test Message";
+        usermsg.UserComments = "I hope you are well";
+
+        usermsg.MessageSender = email;
+        usermsg.Send();
+
+        Console.ReadKey();
     }
 }
