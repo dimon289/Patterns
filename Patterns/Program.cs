@@ -1,4 +1,4 @@
-﻿// Спільний інтерфейс
+﻿
 public interface IComponent
 {
     string Name { get; set; }
@@ -6,13 +6,12 @@ public interface IComponent
     double GetCost();
 }
 
-// Окремий компонент
+// Листовий компонент
 public class Part : IComponent
 {
     public string Name { get; set; }
     public int Quantity { get; set; }
     public double Cost { get; set; }
-
     public Part(string name, int quantity, double cost)
     {
         Name = name;
@@ -47,11 +46,11 @@ public class Program
     public static void Main(string[] args)
     {
 
-        // Частини
+        // частини
         var engine = new Part("Двигун", 1, 5000.0);
         var tires = new Part("Шини", 4, 1000.0);
 
-        // Збірка
+        // збірка
         var body = new Assembly(
             "Кузов",
             1,
@@ -62,7 +61,8 @@ public class Program
             }
         );
 
-        // Автомобіль
+
+        // автомобіль
         var car = new Assembly(
             "Автомобіль",
             1,
