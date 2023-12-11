@@ -1,96 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-public class Product
+public interface IHandler
+{
+    void SetTheNextHandler(IHandler handler);
+    void Process(Request request);
+}
+
+public class Individual
 {
     public string Name { get; set; }
-    public int Price { get; set; }
-    public Product(string name, int price)
-    {
-        Name = name;
-        Price = price;
-    }
-    public void IncreasePrice(int amount)
-    {
-        Price += amount;
-        Console.WriteLine($"The price for the {Name} has been increased by {amount}$.");
-    }
-    public void DecreasePrice(int amount)
-    {
-        if (amount < Price)
-        {
-            Price -= amount;
-            Console.WriteLine($"The price for the {Name} has been decreased by {amount}$.");
-        }
-    }
-    public override string ToString() => $"Current price for the {Name} product is {Price}$.";
+    public int Age { get; set; }
 }
-public interface ICommand
-{
-    void ExecuteAction();
-}
-public enum PriceAction
-{
-    Increase,
-    Decrease
-}
-public class ProductCommand : ICommand
-{
-    private readonly Product _product;
-    private readonly PriceAction _priceAction;
-    private readonly int _amount;
 
-    public ProductCommand(Product product, PriceAction priceAction, int amount)
+abstract class BaseHandler : IHandler
+{
+    protected IHandler _nextHandler;
+
+    public void SetTheNextHandler(IHandler handler)
     {
-        _product = product;
-        _priceAction = priceAction;
-        _amount = amount;
+        _nextHandler = handler;
     }
 
-    public void ExecuteAction()
+    public abstract void Process(Request request);
+}
+
+public class Request
+{
+    public Individual Data { get; set; }
+    public List<string> ValidationMessages;
+
+    public Request()
     {
-        if (_priceAction == PriceAction.Increase)
+        ValidationMessages = new List<string>();
+    }
+}
+
+class MaxHandlerForAge : BaseHandler
+{
+    public override void Process(Request request)
+    {
+        if (request.Data.Age > 60)
         {
-            _product.IncreasePrice(_amount);
+            request.ValidationMessages.Add("Invalid age range");
         }
-        else
+
+        if (_nextHandler != null)
         {
-            _product.DecreasePrice(_amount); // Оновлений рядок
+            _nextHandler.Process(request);
         }
     }
 }
-public class ModifyPrice
+
+class MaxHandlerForNameLength : BaseHandler
 {
-    private readonly List<ICommand> _commands;
-    private ICommand _command;
-    public ModifyPrice()
+    public override void Process(Request request)
     {
-        _commands = new List<ICommand>();
-    }
-    public void SetCommand(ICommand command) => _command = command;
-    public void Invoke()
-    {
-        _commands.Add(_command);
-        _command.ExecuteAction();
+        if (request.Data.Name.Length > 12)
+        {
+            request.ValidationMessages.Add("Invalid name length");
+        }
+
+        if (_nextHandler != null)
+        {
+            _nextHandler.Process(request);
+        }
     }
 }
 class Program
 {
     public static void Main()
     {
-        var modifyPrice = new ModifyPrice();
-        var product = new Product("Phone", 500);
-        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Increase, 100));
+        Individual individual = new Individual()
+        {
+            Name = "Article Writer: Nitro",
+            Age = 65
+        };
 
-        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Increase, 50));
-        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Decrease, 25));
-        Console.WriteLine(product);
+        Request request = new Request() { Data = individual };
 
-    }
-    private static void Execute(Product product, ModifyPrice modifyPrice, ICommand productCommand)
-    {
-        modifyPrice.SetCommand(productCommand);
-        modifyPrice.Invoke();
+        var maxHandlerForAge = new MaxHandlerForAge();
+        var maxHandlerForNameLength = new MaxHandlerForNameLength();
+
+        maxHandlerForAge.SetTheNextHandler(maxHandlerForNameLength);
+        maxHandlerForAge.Process(request);
+
+        foreach (string displayMsg in request.ValidationMessages)
+        {
+            Console.WriteLine(displayMsg);
+        }
+
     }
 }
-
