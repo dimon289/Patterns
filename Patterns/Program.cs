@@ -1,251 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
-
-namespace Flyweight
+using System.Text;
+public class Product
 {
-    class Program
+    public string Name { get; set; }
+    public int Price { get; set; }
+    public Product(string name, int price)
     {
-        static void Main(string[] args)
-        {
-            Example1();
-            Example2();
-            Example3();
-        }
-
-        public static void Example1()
-        {
-            var library = new Library();
-            var book = library.GetPublication(
-                Tuple.Create(
-                    new Author("Patrick Rothfuss"),
-                    "The Name of the Wind",
-                    PublicationType.Book
-                )
-            );
-
-            var graphicNovel = library.GetPublication(
-                Tuple.Create(
-                    new Author("Julie Doucet"),
-                    "My New York Diary",
-                    PublicationType.GraphicNovel
-                )
-            );
-
-            book = library.GetPublication(
-                Tuple.Create(
-                    new Author("Patrick Rothfuss"),
-                    "The Name of the Wind",
-                    PublicationType.Book
-                )
-            );
-
-            Console.WriteLine($"Library contains [{library.GetPublicationCount}] publications.");
-        }
-
-        public static void Example2()
-        {
-            var library = new Library();
-
-            var patrickRothfuss = new Author("Patrick Rothfuss");
-            var julieDoucet = new Author("Julie Doucet");
-
-            var book = library.GetPublication(
-                Tuple.Create(
-                    patrickRothfuss,
-                    "The Name of the Wind",
-                    PublicationType.Book
-                )
-            );
-
-            var graphicNovel = library.GetPublication(
-                Tuple.Create(
-                    julieDoucet,
-                    "My New York Diary",
-                    PublicationType.GraphicNovel
-                )
-            );
-
-            book = library.GetPublication(
-                Tuple.Create(
-                    patrickRothfuss,
-                    "The Name of the Wind",
-                    PublicationType.Book
-                )
-            );
-
-            Console.WriteLine($"Library contains [{library.GetPublicationCount}] publications.");
-        }
-
-        public static void Example3()
-        {
-            var library = new Library();
-
-            library.GetPublication(
-                Tuple.Create(
-                    new Author("Dante"),
-                    "Divine Comedy",
-                    PublicationType.Epic
-                )
-            );
-        }
-
+        Name = name;
+        Price = price;
     }
-
-    public class Author
+    public void IncreasePrice(int amount)
     {
-        public string Name { get; set; }
-
-        public Author(string name)
+        Price += amount;
+        Console.WriteLine($"The price for the {Name} has been increased by {amount}$.");
+    }
+    public void DecreasePrice(int amount)
+    {
+        if (amount < Price)
         {
-            Name = name;
+            Price -= amount;
+            Console.WriteLine($"The price for the {Name} has been decreased by {amount}$.");
         }
     }
+    public override string ToString() => $"Current price for the {Name} product is {Price}$.";
+}
+public interface ICommand
+{
+    void ExecuteAction();
+}
+public enum PriceAction
+{
+    Increase,
+    Decrease
+}
+public class ProductCommand : ICommand
+{
+    private readonly Product _product;
+    private readonly PriceAction _priceAction;
+    private readonly int _amount;
 
-    public class Illustrator
+    public ProductCommand(Product product, PriceAction priceAction, int amount)
     {
-        public string Name { get; set; }
-
-        public Illustrator(string name)
-        {
-            Name = name;
-        }
+        _product = product;
+        _priceAction = priceAction;
+        _amount = amount;
     }
 
-    public class Publisher
+    public void ExecuteAction()
     {
-        public string Name { get; set; }
-
-        public Publisher(string name)
+        if (_priceAction == PriceAction.Increase)
         {
-            Name = name;
+            _product.IncreasePrice(_amount);
         }
-    }
-
-    public interface IPublication
-    {
-        Author Author { get; set; }
-        Publisher Publisher { get; set; }
-        string Title { get; set; }
-    }
-
-    public enum PublicationType
-    {
-        Book,
-        Epic,
-        GraphicNovel
-    }
-
-    public class Book : IPublication
-    {
-        public Author Author { get; set; }
-        public int PageCount { get; set; }
-        public Publisher Publisher { get; set; }
-        public string Title { get; set; }
-
-        public Book(Author author, Publisher publisher, string title)
+        else
         {
-            Author = author;
-            Publisher = publisher;
-            Title = title;
+            _product.DecreasePrice(_amount); // Оновлений рядок
         }
-
-        public Book(Author author, int pageCount, Publisher publisher, string title)
-        {
-            Author = author;
-            PageCount = pageCount;
-            Publisher = publisher;
-            Title = title;
-        }
-    }
-
-    public class GraphicNovel : IPublication
-    {
-        public Author Author { get; set; }
-        public Illustrator Illustrator { get; set; }
-        public Publisher Publisher { get; set; }
-        public string Title { get; set; }
-
-        public GraphicNovel(Author author, Illustrator illustrator, Publisher publisher, string title)
-        {
-            Author = author;
-            Illustrator = illustrator;
-            Publisher = publisher;
-            Title = title;
-        }
-    }
-
-    public class Library
-    {
-        protected Dictionary<Tuple<Author, string, PublicationType>, IPublication> Publications =
-            new Dictionary<Tuple<Author, string, PublicationType>, IPublication>();
-
-        public int GetPublicationCount => Publications.Count;
-        public class EpicPublication : IPublication
-        {
-            public Author Author { get; set; }
-            public Publisher Publisher { get; set; }
-            public string Title { get; set; }
-
-            public EpicPublication(Author author, Publisher publisher, string title)
-            {
-                Author = author;
-                Publisher = publisher;
-                Title = title;
-            }
-        }
-        public IPublication GetPublication(Tuple<Author, string, PublicationType> key)
-        {
-            IPublication publication = null;
-            try
-            {
-                if (Publications.ContainsKey(key))
-                {
-                    publication = Publications[key];
-                    Console.WriteLine("Existing Publication located:");
-                    Console.WriteLine(publication);
-                }
-                else
-                {
-                    switch (key.Item3)
-                    {
-                        case PublicationType.Book:
-                            publication = new Book(
-                                author: key.Item1,
-                                pageCount: 662,
-                                publisher: new Publisher("DAW Books"),
-                                title: key.Item2
-                            );
-                            break;
-                        case PublicationType.GraphicNovel:
-                            publication = new GraphicNovel(
-                                author: key.Item1,
-                                illustrator: new Illustrator(key.Item1.Name),
-                                publisher: new Publisher("Drawn & Quarterly"),
-                                title: key.Item2
-                            );
-                            break;
-                        case PublicationType.Epic:
-                            // Create a new Epic (ConcreteFlyweight) example.
-                            publication = new EpicPublication(
-                                author: key.Item1,
-                                publisher: new Publisher("Epic Publishers"),
-                                title: key.Item2
-                            );
-                            break;
-                        default:
-                            throw new ArgumentException($"[PublicationType.{key.Item3}] is not configured. Publication ('{key.Item2}' by {key.Item1.Name}) cannot be created.");
-                    }
-                    Console.WriteLine("New Publication created:");
-                    Console.WriteLine(publication);
-                    Publications.Add(key, publication);
-                }
-            }
-            catch (ArgumentException exception)
-            {
-                Console.WriteLine(exception);
-            }
-            return publication;
-        }
-
     }
 }
+public class ModifyPrice
+{
+    private readonly List<ICommand> _commands;
+    private ICommand _command;
+    public ModifyPrice()
+    {
+        _commands = new List<ICommand>();
+    }
+    public void SetCommand(ICommand command) => _command = command;
+    public void Invoke()
+    {
+        _commands.Add(_command);
+        _command.ExecuteAction();
+    }
+}
+class Program
+{
+    public static void Main()
+    {
+        var modifyPrice = new ModifyPrice();
+        var product = new Product("Phone", 500);
+        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Increase, 100));
+
+        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Increase, 50));
+        Execute(product, modifyPrice, new ProductCommand(product, PriceAction.Decrease, 25));
+        Console.WriteLine(product);
+
+    }
+    private static void Execute(Product product, ModifyPrice modifyPrice, ICommand productCommand)
+    {
+        modifyPrice.SetCommand(productCommand);
+        modifyPrice.Invoke();
+    }
+}
+
