@@ -1,106 +1,251 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-public struct Point
+namespace Flyweight
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-
-    public Point(int x, int y)
+    class Program
     {
-        X = x;
-        Y = y;
-    }
-}
-
-public interface IBuffer
-{
-    void Write(string value);
-    void WriteLine(string value);
-    string ReadLine();
-    // Other methods and properties as needed
-}
-
-public class TableBuffer : IBuffer
-{
-    private readonly TableColumnSpec[] spec;
-    private readonly int totalHeight;
-    private readonly List<string[]> buffer;
-    private static readonly Point invalidPoint = new Point(-1, -1);
-    private readonly short[,] formatBuffer;
-
-    public TableBuffer(TableColumnSpec[] spec, int totalHeight)
-    {
-        this.spec = spec;
-        this.totalHeight = totalHeight;
-        buffer = new List<string[]>();
-        for (int i = 0; i < (totalHeight - 1); ++i)
+        static void Main(string[] args)
         {
-            buffer.Add(new string[spec.Length]);
+            Example1();
+            Example2();
+            Example3();
         }
-        formatBuffer = new short[spec.Max(s => s.Width), totalHeight];
-    }
 
-    public void Write(string value)
-    {
-        // Implement the Write method
-    }
-
-    public void WriteLine(string value)
-    {
-        // Implement the WriteLine method
-    }
-
-    public string ReadLine()
-    {
-        // Implement the ReadLine method
-        return string.Empty; // Replace with the actual implementation
-    }
-
-    public struct TableColumnSpec
-    {
-        public string Header;
-        public int Width;
-        public TableColumnAlignment Alignment;
-    }
-}
-
-public enum TableColumnAlignment
-{
-    Left,
-    Right,
-    Center
-}
-class Program
-{
-
-    static void Main()
-    {
-        // Define column specifications for the table
-        var columnSpecs = new TableBuffer.TableColumnSpec[]
+        public static void Example1()
         {
-        new TableBuffer.TableColumnSpec { Header = "Column1", Width = 10, Alignment = TableColumnAlignment.Left },
-        new TableBuffer.TableColumnSpec { Header = "Column2", Width = 20, Alignment = TableColumnAlignment.Right },
-        new TableBuffer.TableColumnSpec { Header = "Column3", Width = 15, Alignment = TableColumnAlignment.Center }
-        };
+            var library = new Library();
+            var book = library.GetPublication(
+                Tuple.Create(
+                    new Author("Patrick Rothfuss"),
+                    "The Name of the Wind",
+                    PublicationType.Book
+                )
+            );
 
-        // Create a TableBuffer with the specified column specs and total height
-        var buffer = new TableBuffer(columnSpecs, 10);
+            var graphicNovel = library.GetPublication(
+                Tuple.Create(
+                    new Author("Julie Doucet"),
+                    "My New York Diary",
+                    PublicationType.GraphicNovel
+                )
+            );
 
-        // Now you can use the buffer as before
-        buffer.Write("Hello, ");
-        buffer.WriteLine("World!");
-        buffer.Write("This is a ");
-        buffer.Write("TableBuffer");
-        buffer.WriteLine(" example");
+            book = library.GetPublication(
+                Tuple.Create(
+                    new Author("Patrick Rothfuss"),
+                    "The Name of the Wind",
+                    PublicationType.Book
+                )
+            );
 
-        string line1 = buffer.ReadLine();
-        string line2 = buffer.ReadLine();
-        string line3 = buffer.ReadLine();
+            Console.WriteLine($"Library contains [{library.GetPublicationCount}] publications.");
+        }
 
-        Console.WriteLine($"Line 1: {line1}");
-        Console.WriteLine($"Line 2: {line2}");
-        Console.WriteLine($"Line 3: {line3}");
+        public static void Example2()
+        {
+            var library = new Library();
+
+            var patrickRothfuss = new Author("Patrick Rothfuss");
+            var julieDoucet = new Author("Julie Doucet");
+
+            var book = library.GetPublication(
+                Tuple.Create(
+                    patrickRothfuss,
+                    "The Name of the Wind",
+                    PublicationType.Book
+                )
+            );
+
+            var graphicNovel = library.GetPublication(
+                Tuple.Create(
+                    julieDoucet,
+                    "My New York Diary",
+                    PublicationType.GraphicNovel
+                )
+            );
+
+            book = library.GetPublication(
+                Tuple.Create(
+                    patrickRothfuss,
+                    "The Name of the Wind",
+                    PublicationType.Book
+                )
+            );
+
+            Console.WriteLine($"Library contains [{library.GetPublicationCount}] publications.");
+        }
+
+        public static void Example3()
+        {
+            var library = new Library();
+
+            library.GetPublication(
+                Tuple.Create(
+                    new Author("Dante"),
+                    "Divine Comedy",
+                    PublicationType.Epic
+                )
+            );
+        }
+
+    }
+
+    public class Author
+    {
+        public string Name { get; set; }
+
+        public Author(string name)
+        {
+            Name = name;
+        }
+    }
+
+    public class Illustrator
+    {
+        public string Name { get; set; }
+
+        public Illustrator(string name)
+        {
+            Name = name;
+        }
+    }
+
+    public class Publisher
+    {
+        public string Name { get; set; }
+
+        public Publisher(string name)
+        {
+            Name = name;
+        }
+    }
+
+    public interface IPublication
+    {
+        Author Author { get; set; }
+        Publisher Publisher { get; set; }
+        string Title { get; set; }
+    }
+
+    public enum PublicationType
+    {
+        Book,
+        Epic,
+        GraphicNovel
+    }
+
+    public class Book : IPublication
+    {
+        public Author Author { get; set; }
+        public int PageCount { get; set; }
+        public Publisher Publisher { get; set; }
+        public string Title { get; set; }
+
+        public Book(Author author, Publisher publisher, string title)
+        {
+            Author = author;
+            Publisher = publisher;
+            Title = title;
+        }
+
+        public Book(Author author, int pageCount, Publisher publisher, string title)
+        {
+            Author = author;
+            PageCount = pageCount;
+            Publisher = publisher;
+            Title = title;
+        }
+    }
+
+    public class GraphicNovel : IPublication
+    {
+        public Author Author { get; set; }
+        public Illustrator Illustrator { get; set; }
+        public Publisher Publisher { get; set; }
+        public string Title { get; set; }
+
+        public GraphicNovel(Author author, Illustrator illustrator, Publisher publisher, string title)
+        {
+            Author = author;
+            Illustrator = illustrator;
+            Publisher = publisher;
+            Title = title;
+        }
+    }
+
+    public class Library
+    {
+        protected Dictionary<Tuple<Author, string, PublicationType>, IPublication> Publications =
+            new Dictionary<Tuple<Author, string, PublicationType>, IPublication>();
+
+        public int GetPublicationCount => Publications.Count;
+        public class EpicPublication : IPublication
+        {
+            public Author Author { get; set; }
+            public Publisher Publisher { get; set; }
+            public string Title { get; set; }
+
+            public EpicPublication(Author author, Publisher publisher, string title)
+            {
+                Author = author;
+                Publisher = publisher;
+                Title = title;
+            }
+        }
+        public IPublication GetPublication(Tuple<Author, string, PublicationType> key)
+        {
+            IPublication publication = null;
+            try
+            {
+                if (Publications.ContainsKey(key))
+                {
+                    publication = Publications[key];
+                    Console.WriteLine("Existing Publication located:");
+                    Console.WriteLine(publication);
+                }
+                else
+                {
+                    switch (key.Item3)
+                    {
+                        case PublicationType.Book:
+                            publication = new Book(
+                                author: key.Item1,
+                                pageCount: 662,
+                                publisher: new Publisher("DAW Books"),
+                                title: key.Item2
+                            );
+                            break;
+                        case PublicationType.GraphicNovel:
+                            publication = new GraphicNovel(
+                                author: key.Item1,
+                                illustrator: new Illustrator(key.Item1.Name),
+                                publisher: new Publisher("Drawn & Quarterly"),
+                                title: key.Item2
+                            );
+                            break;
+                        case PublicationType.Epic:
+                            // Create a new Epic (ConcreteFlyweight) example.
+                            publication = new EpicPublication(
+                                author: key.Item1,
+                                publisher: new Publisher("Epic Publishers"),
+                                title: key.Item2
+                            );
+                            break;
+                        default:
+                            throw new ArgumentException($"[PublicationType.{key.Item3}] is not configured. Publication ('{key.Item2}' by {key.Item1.Name}) cannot be created.");
+                    }
+                    Console.WriteLine("New Publication created:");
+                    Console.WriteLine(publication);
+                    Publications.Add(key, publication);
+                }
+            }
+            catch (ArgumentException exception)
+            {
+                Console.WriteLine(exception);
+            }
+            return publication;
+        }
+
     }
 }
