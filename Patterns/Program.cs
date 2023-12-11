@@ -1,95 +1,107 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-public interface IHandler
-{
-    void SetTheNextHandler(IHandler handler);
-    void Process(Request request);
-}
 
-public class Individual
+namespace Iterator.Collection
 {
-    public string Name { get; set; }
-    public int Age { get; set; }
-}
-
-abstract class BaseHandler : IHandler
-{
-    protected IHandler _nextHandler;
-
-    public void SetTheNextHandler(IHandler handler)
+    public class EveryFlavorBean
     {
-        _nextHandler = handler;
-    }
+        private readonly string flavor;
 
-    public abstract void Process(Request request);
-}
-
-public class Request
-{
-    public Individual Data { get; set; }
-    public List<string> ValidationMessages;
-
-    public Request()
-    {
-        ValidationMessages = new List<string>();
-    }
-}
-
-class MaxHandlerForAge : BaseHandler
-{
-    public override void Process(Request request)
-    {
-        if (request.Data.Age > 60)
+        public EveryFlavorBean(string flavor)
         {
-            request.ValidationMessages.Add("Invalid age range");
+            this.flavor = flavor;
         }
 
-        if (_nextHandler != null)
+        public string Flavor
         {
-            _nextHandler.Process(request);
+            get { return flavor; }
         }
     }
-}
 
-class MaxHandlerForNameLength : BaseHandler
-{
-    public override void Process(Request request)
+    public interface ICandyCollection
     {
-        if (request.Data.Name.Length > 12)
+        IBeanIterator CreateIterator();
+    }
+
+    public class BertieBottsEveryFlavorBeanBox : ICandyCollection
+    {
+        private List<EveryFlavorBean> items = new List<EveryFlavorBean>();
+
+        public IBeanIterator CreateIterator()
         {
-            request.ValidationMessages.Add("Invalid name length");
+            return new BeanIterator(this);
         }
 
-        if (_nextHandler != null)
+        public int Count
         {
-            _nextHandler.Process(request);
+            get { return items.Count; }
+        }
+
+        public void Add(params string[] beans)
+        {
+            foreach (string bean in beans)
+                items.Add(new EveryFlavorBean(bean));
+        }
+
+        public EveryFlavorBean this[int index]
+        {
+            get { return items[index]; }
         }
     }
-}
-class Program
-{
-    public static void Main()
+
+    public interface IBeanIterator
     {
-        Individual individual = new Individual()
+        EveryFlavorBean First();
+        EveryFlavorBean Next();
+        bool IsDone { get; }
+        EveryFlavorBean CurrentBean { get; }
+    }
+
+    public class BeanIterator : IBeanIterator
+    {
+        private BertieBottsEveryFlavorBeanBox bertieBottsEveryFlavorBeanBox;
+        private int current = 0;
+        private int step = 1;
+
+        public BeanIterator(BertieBottsEveryFlavorBeanBox bertieBottsEveryFlavorBeanBox)
         {
-            Name = "Article Writer: Nitro",
-            Age = 65
-        };
-
-        Request request = new Request() { Data = individual };
-
-        var maxHandlerForAge = new MaxHandlerForAge();
-        var maxHandlerForNameLength = new MaxHandlerForNameLength();
-
-        maxHandlerForAge.SetTheNextHandler(maxHandlerForNameLength);
-        maxHandlerForAge.Process(request);
-
-        foreach (string displayMsg in request.ValidationMessages)
-        {
-            Console.WriteLine(displayMsg);
+            this.bertieBottsEveryFlavorBeanBox = bertieBottsEveryFlavorBeanBox;
         }
 
+        public bool IsDone => current >= bertieBottsEveryFlavorBeanBox.Count;
+
+        public EveryFlavorBean First()
+        {
+            current = 0;
+            return bertieBottsEveryFlavorBeanBox[current];
+        }
+
+        public EveryFlavorBean Next()
+        {
+            current += step;
+            if (!IsDone)
+                return bertieBottsEveryFlavorBeanBox[current];
+            else
+                return null;
+        }
+
+        public EveryFlavorBean CurrentBean => bertieBottsEveryFlavorBeanBox[current];
+    }
+
+    class Program
+    {
+
+        public static void Main()
+        {
+            BertieBottsEveryFlavorBeanBox beanBox = new BertieBottsEveryFlavorBeanBox();
+            beanBox.Add("Banana", "Black Pepper", "Blueberry", "Booger", "Candyfloss", "Cherry", "Cinnamon", "Dirt", "Earthworm", "Earwax", "Grass", "Green Apple", "Marshmallow", "Rotten Egg", "Sausage", "Lemon", "Soap", "Tutti-Frutti", "Vomit", "Watermelon");
+
+            BeanIterator iterator = (BeanIterator)beanBox.CreateIterator();
+
+            for (EveryFlavorBean item = iterator.First(); !iterator.IsDone; item = iterator.Next())
+            {
+                Console.WriteLine(item.Flavor);
+            }
+        }
     }
 }
