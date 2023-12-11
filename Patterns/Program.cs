@@ -1,80 +1,131 @@
-﻿
-public interface IComponent
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Linq;
+
+public class Point
 {
-    string Name { get; set; }
-    int Quantity { get; set; }
-    double GetCost();
+    public int X;
+    public int Y;
+
+    public Point(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
 }
 
-// Листовий компонент
-public class Part : IComponent
+public class Line
 {
-    public string Name { get; set; }
-    public int Quantity { get; set; }
-    public double Cost { get; set; }
-    public Part(string name, int quantity, double cost)
+    public Point Start, End;
+
+    public Line(Point start, Point end)
     {
-        Name = name;
-        Quantity = quantity;
-        Cost = cost;
+        Start = start;
+        End = end;
+    }
+}
+
+public interface IDrawable
+{
+    void DrawPoint(Point p);
+}
+
+public abstract class VectorObject : Collection<Line>, IDrawable
+{
+    public abstract void Draw();
+    public abstract void DrawPoint(Point p);
+}
+
+public class VectorRectangle : VectorObject
+{
+    public VectorRectangle(int x, int y, int width, int height)
+    {
+        Add(new Line(new Point(x, y), new Point(x + width, y)));
+        Add(new Line(new Point(x + width, y), new Point(x + width, y + height)));
+        Add(new Line(new Point(x, y), new Point(x, y + height)));
+        Add(new Line(new Point(x, y + height), new Point(x + width, y + height)));
     }
 
-    public double GetCost() => Cost * Quantity;
-}
-
-// Композитний компонент
-public class Assembly : IComponent
-{
-    public string Name { get; set; }
-    public int Quantity { get; set; }
-
-    private readonly List<IComponent> _components = new();
-
-    public Assembly(string name, int quantity, IEnumerable<IComponent> components)
+    public override void Draw()
     {
-        Name = name;
-        Quantity = quantity;
-        _components.AddRange(components);
+        foreach (var line in this)
+        {
+            Console.WriteLine($"Drawing line from ({line.Start.X}, {line.Start.Y}) to ({line.End.X}, {line.End.Y})");
+        }
     }
 
-    public double GetCost() => _components.Sum(component => component.GetCost());
+    public override void DrawPoint(Point p)
+    {
+        Console.WriteLine($"Drawing point at ({p.X}, {p.Y})");
+    }
 }
 
-// Клієнт
-public class Program
+public class LineToPointAdapter : Collection<Point>
 {
-    public static void Main(string[] args)
+    private static int count = 0;
+
+    public LineToPointAdapter(Line line)
     {
+        Console.WriteLine($"{++count}: Generating points for line " +
+            $"[{line.Start.X},{line.Start.Y}]-[{line.End.X},{line.End.Y}] (no caching)");
 
-        // частини
-        var engine = new Part("Двигун", 1, 5000.0);
-        var tires = new Part("Шини", 4, 1000.0);
+        int left = Math.Min(line.Start.X, line.End.X);
+        int right = Math.Max(line.Start.X, line.End.X);
+        int top = Math.Min(line.Start.Y, line.End.Y);
+        int bottom = Math.Max(line.Start.Y, line.End.Y);
 
-        // збірка
-        var body = new Assembly(
-            "Кузов",
-            1,
-            new List<IComponent> {
-                new Part("Рама", 1, 2000.0),
-                new Part("Двері", 4, 1000.0),
-                new Part("Вікна", 6, 500.0)
+        if (right - left == 0)
+        {
+            for (int y = top; y <= bottom; ++y)
+            {
+                Add(new Point(left, y));
             }
-        );
+        }
+        else if (line.End.Y - line.Start.Y == 0)
+        {
+            for (int x = left; x <= right; ++x)
+            {
+                Add(new Point(x, top));
+            }
+        }
+    }
+}
 
+public static class GraphicEditor
+{
+    private static readonly List<VectorObject> vectorObjects = new List<VectorObject>
+    {
+        new VectorRectangle(1, 1, 10, 10),
+        new VectorRectangle(3, 3, 6, 6)
+    };
 
-        // автомобіль
-        var car = new Assembly(
-            "Автомобіль",
-            1,
-            new List<IComponent> {
-                engine,
-                tires,
-                body
-        });
+    public static void DrawPoint(Point p)
+    {
+        Console.Write(".");
+    }
 
-        // Розрахунок вартості автомобіля
-        var carCost = car.GetCost();
+    public static void Draw()
+    {
+        foreach (var vo in vectorObjects)
+        {
+            foreach (var line in vo)
+            {
+                var adapter = new LineToPointAdapter(line);
+                foreach (var point in adapter)
+                {
+                    DrawPoint(point);
+                }
+            }
+        }
+    }
+}
 
-        Console.WriteLine($"Вартість автомобіля: {carCost:C}");
+class Program
+{
+    static void Main()
+    {
+        GraphicEditor.Draw();
     }
 }
