@@ -1,107 +1,107 @@
-﻿using System;
+﻿using Mediator.Components;
+using System;
 using System.Collections.Generic;
 
-namespace Iterator.Collection
+namespace Mediator.Components
 {
-    public class EveryFlavorBean
+    public class SnackBar
     {
-        private readonly string flavor;
+        protected IMediator _mediator;
 
-        public EveryFlavorBean(string flavor)
+        public SnackBar(IMediator mediator)
         {
-            this.flavor = flavor;
-        }
-
-        public string Flavor
-        {
-            get { return flavor; }
+            _mediator = mediator;
         }
     }
 
-    public interface ICandyCollection
+    public class HotDogStand : SnackBar
     {
-        IBeanIterator CreateIterator();
-    }
-
-    public class BertieBottsEveryFlavorBeanBox : ICandyCollection
-    {
-        private List<EveryFlavorBean> items = new List<EveryFlavorBean>();
-
-        public IBeanIterator CreateIterator()
+        public HotDogStand(IMediator mediator) : base(mediator)
         {
-            return new BeanIterator(this);
         }
 
-        public int Count
+        public void Send(string message)
         {
-            get { return items.Count; }
+            Console.WriteLine($"HotDog Stand says: {message}");
+            _mediator.SendMessage(message, this);
         }
 
-        public void Add(params string[] beans)
+        public void Notify(string message)
         {
-            foreach (string bean in beans)
-                items.Add(new EveryFlavorBean(bean));
-        }
-
-        public EveryFlavorBean this[int index]
-        {
-            get { return items[index]; }
+            Console.WriteLine($"HotDog Stand gets message: {message}");
         }
     }
 
-    public interface IBeanIterator
+    public class FrenchFriesStand : SnackBar
     {
-        EveryFlavorBean First();
-        EveryFlavorBean Next();
-        bool IsDone { get; }
-        EveryFlavorBean CurrentBean { get; }
+        public FrenchFriesStand(IMediator mediator) : base(mediator)
+        {
+        }
+
+        public void Send(string message)
+        {
+            Console.WriteLine($"French Fries Stand says: {message}");
+            _mediator.SendMessage(message, this);
+        }
+
+        public void Notify(string message)
+        {
+            Console.WriteLine($"French Fries Stand gets message: {message}");
+        }
+    }
+}
+
+namespace Mediator
+{
+    public interface IMediator
+    {
+        void SendMessage(string message, SnackBar snackBar);
     }
 
-    public class BeanIterator : IBeanIterator
+    public class SnackBarMediator : IMediator
     {
-        private BertieBottsEveryFlavorBeanBox bertieBottsEveryFlavorBeanBox;
-        private int current = 0;
-        private int step = 1;
+        private HotDogStand hotDogStand;
+        private FrenchFriesStand friesStand;
 
-        public BeanIterator(BertieBottsEveryFlavorBeanBox bertieBottsEveryFlavorBeanBox)
+        public HotDogStand HotDogStand
         {
-            this.bertieBottsEveryFlavorBeanBox = bertieBottsEveryFlavorBeanBox;
+            set { hotDogStand = value; }
         }
 
-        public bool IsDone => current >= bertieBottsEveryFlavorBeanBox.Count;
-
-        public EveryFlavorBean First()
+        public FrenchFriesStand FriesStand
         {
-            current = 0;
-            return bertieBottsEveryFlavorBeanBox[current];
+            set { friesStand = value; }
         }
 
-        public EveryFlavorBean Next()
+        public void SendMessage(string message, SnackBar snackBar)
         {
-            current += step;
-            if (!IsDone)
-                return bertieBottsEveryFlavorBeanBox[current];
-            else
-                return null;
+            if (snackBar == hotDogStand)
+                friesStand.Notify(message);
+            if (snackBar == friesStand)
+                hotDogStand.Notify(message);
         }
-
-        public EveryFlavorBean CurrentBean => bertieBottsEveryFlavorBeanBox[current];
     }
-
     class Program
     {
 
         public static void Main()
         {
-            BertieBottsEveryFlavorBeanBox beanBox = new BertieBottsEveryFlavorBeanBox();
-            beanBox.Add("Banana", "Black Pepper", "Blueberry", "Booger", "Candyfloss", "Cherry", "Cinnamon", "Dirt", "Earthworm", "Earwax", "Grass", "Green Apple", "Marshmallow", "Rotten Egg", "Sausage", "Lemon", "Soap", "Tutti-Frutti", "Vomit", "Watermelon");
+            SnackBarMediator mediator = new SnackBarMediator();
 
-            BeanIterator iterator = (BeanIterator)beanBox.CreateIterator();
+            HotDogStand leftKitchen = new HotDogStand(mediator);
+            FrenchFriesStand rightKitchen = new FrenchFriesStand(mediator);
 
-            for (EveryFlavorBean item = iterator.First(); !iterator.IsDone; item = iterator.Next())
-            {
-                Console.WriteLine(item.Flavor);
-            }
+            mediator.HotDogStand = leftKitchen;
+            mediator.FriesStand = rightKitchen;
+
+            leftKitchen.Send("Can you send more cooking oil?");
+            rightKitchen.Send("Sure thing, Homer's on his way");
+
+            rightKitchen.Send("Do you have any extra soda? We've had a rush on them over here.");
+            leftKitchen.Send("Just a couple, we'll send Homer back with them");
+
+            Console.ReadKey();
+
         }
     }
 }
