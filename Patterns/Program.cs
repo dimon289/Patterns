@@ -1,76 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-public interface InterfaceStrategy
-{
-    IEnumerable<string> PerformAlgorithm(List<string> list);
-}
-class DefaultConcreteStrategy : InterfaceStrategy
-{
-    public IEnumerable<string> PerformAlgorithm(List<string> list)
-    {
-        list.Sort();
-        return list;
-    }
-}
+using System.Linq;
 
-class AlternativeConcreteStrategy : InterfaceStrategy
+public static class EnumerableExtensions
 {
-    public IEnumerable<string> PerformAlgorithm(List<string> list)
+    public static TState Aggregate<TSource, TState>(this IEnumerable<TSource> seq, Func<TSource, TState, TState> aggregator, TState initial)
     {
-        list.Sort();
-        list.Reverse();
-        return list;
+        var state = initial;
+        foreach (var x in seq)
+            state = aggregator(x, state);
+        return state;
     }
 }
-class Context
-{
-    private InterfaceStrategy _strategy;
 
-    public Context()
-    {
-    }
-
-    public Context(InterfaceStrategy strategy)
-    {
-        _strategy = strategy;
-    }
-
-    // here we can replace the current or default strategy if we choose
-    public void SetStrategy(InterfaceStrategy strategy)
-    {
-        _strategy = strategy;
-    }
-    public void CarryOutWork()
-    {
-        Console.WriteLine("Context: Carrying out Sorting Work");
-        var myResult = _strategy
-            .PerformAlgorithm(new List<string>
-            {
-                "the",
-                "boy",
-                "is",
-                "leaving"
-            });
-
-        Console.WriteLine(String.Join(",", myResult));
-    }
-}
-class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
-        // client picks the default concrete strategy:
-        Console.WriteLine("Sorting strategy has been set to alphabetical:");
-        var context = new Context();
+        var seq = Enumerable.Range(1, 10);
 
-        context.SetStrategy(new DefaultConcreteStrategy());
-        context.CarryOutWork();
-        Console.WriteLine();
+        var sumResult = seq.Aggregate((a, b) => a + b, 0);
+        var productResult = seq.Aggregate((a, b) => a * b, 1);
 
-        // client picks the alternative concrete strategy
-        Console.WriteLine("Sorting strategy has been set to reverse:");
-        context.SetStrategy(new AlternativeConcreteStrategy());
-        context.CarryOutWork();
+        Console.WriteLine($"Сума: {sumResult}");
+        Console.WriteLine($"Добуток: {productResult}");
+
     }
 }
