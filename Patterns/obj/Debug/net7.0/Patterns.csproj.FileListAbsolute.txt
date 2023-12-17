@@ -13,3 +13,5 @@ C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\o
 C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.pdb
 C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.genruntimeconfig.cache
 C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\ref\Patterns.dll
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\bin\Debug\net7.0\Memento.dll
+C:\Users\dtkac\OneDrive\Рабочий стол\college\ARCH\Patterns\Patterns\obj\Debug\net7.0\Patterns.csproj.CopyComplete

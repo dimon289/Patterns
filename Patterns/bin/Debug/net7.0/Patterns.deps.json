@@ -7,8 +7,19 @@
   "targets": {
     ".NETCoreApp,Version=v7.0": {
       "Patterns/1.0.0": {
+        "dependencies": {
+          "Memento": "1.2.1"
+        },
         "runtime": {
           "Patterns.dll": {}
+        }
+      },
+      "Memento/1.2.1": {
+        "runtime": {
+          "lib/net40/Memento.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
@@ -18,6 +29,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Memento/1.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XMRcsW2LOdiGpXcNwl6wm3mCTHpr53kJOYSbHoKsV0kMwEczgh5GogNuu3VQhz6q2Pkz2ERP31mpYv5x2chnQQ==",
+      "path": "memento/1.2.1",
+      "hashPath": "memento.1.2.1.nupkg.sha512"
     }
   }
 }

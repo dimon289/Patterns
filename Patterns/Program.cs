@@ -1,107 +1,197 @@
-﻿using Mediator.Components;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Mediator.Components
+public readonly struct BaggageInfo
 {
-    public class SnackBar
-    {
-        protected IMediator _mediator;
+    public int FlightNumber { get; }
+    public string From { get; }
+    public int Carousel { get; }
 
-        public SnackBar(IMediator mediator)
+    public BaggageInfo(int flightNumber, string from, int carousel)
+    {
+        FlightNumber = flightNumber;
+        From = from;
+        Carousel = carousel;
+    }
+}
+
+public sealed class BaggageHandler : IObservable<BaggageInfo>
+{
+    private readonly HashSet<IObserver<BaggageInfo>> _observers = new HashSet<IObserver<BaggageInfo>>();
+    private readonly HashSet<BaggageInfo> _flights = new HashSet<BaggageInfo>();
+
+    public IDisposable Subscribe(IObserver<BaggageInfo> observer)
+    {
+        if (_observers.Add(observer))
         {
-            _mediator = mediator;
+            foreach (BaggageInfo item in _flights)
+            {
+                observer.OnNext(item);
+            }
+        }
+
+        return new Unsubscriber<BaggageInfo>(_observers, observer);
+    }
+
+    public class Unsubscriber<T> : IDisposable
+    {
+        private readonly HashSet<IObserver<T>> _observers;
+        private readonly IObserver<T> _observer;
+
+        public Unsubscriber(HashSet<IObserver<T>> observers, IObserver<T> observer)
+        {
+            _observers = observers;
+            _observer = observer;
+        }
+
+        public void Dispose()
+        {
+            if (_observer != null && _observers.Contains(_observer))
+            {
+                _observers.Remove(_observer);
+            }
         }
     }
 
-    public class HotDogStand : SnackBar
+    public void BaggageStatus(int flightNumber) =>
+        BaggageStatus(flightNumber, string.Empty, 0);
+
+    public void BaggageStatus(int flightNumber, string from, int carousel)
     {
-        public HotDogStand(IMediator mediator) : base(mediator)
-        {
-        }
+        var info = new BaggageInfo(flightNumber, from, carousel);
 
-        public void Send(string message)
+        if (carousel > 0 && _flights.Add(info))
         {
-            Console.WriteLine($"HotDog Stand says: {message}");
-            _mediator.SendMessage(message, this);
+            foreach (IObserver<BaggageInfo> observer in _observers)
+            {
+                observer.OnNext(info);
+            }
         }
-
-        public void Notify(string message)
+        else if (carousel == 0)
         {
-            Console.WriteLine($"HotDog Stand gets message: {message}");
+            if (_flights.RemoveWhere(flight => flight.FlightNumber == flightNumber) > 0)
+            {
+                foreach (IObserver<BaggageInfo> observer in _observers)
+                {
+                    observer.OnNext(info);
+                }
+            }
         }
     }
 
-    public class FrenchFriesStand : SnackBar
+    public void LastBaggageClaimed()
     {
-        public FrenchFriesStand(IMediator mediator) : base(mediator)
+        foreach (IObserver<BaggageInfo> observer in _observers)
         {
+            observer.OnCompleted();
         }
 
-        public void Send(string message)
+        _observers.Clear();
+    }
+}
+
+public class ArrivalsMonitor : IObserver<BaggageInfo>
+{
+    private readonly string _name;
+    private readonly List<string> _flights = new List<string>();
+    private readonly string _format = "{0,-20} {1,5}  {2,3}";
+    private IDisposable _cancellation;
+
+    public ArrivalsMonitor(string name)
+    {
+        if (name is null)
         {
-            Console.WriteLine($"French Fries Stand says: {message}");
-            _mediator.SendMessage(message, this);
+            throw new ArgumentNullException(nameof(name));
         }
 
-        public void Notify(string message)
+        _name = name;
+    }
+
+    public virtual void Subscribe(BaggageHandler provider) =>
+        _cancellation = provider.Subscribe(this);
+
+    public virtual void Unsubscribe()
+    {
+        _cancellation.Dispose();
+        _flights.Clear();
+    }
+
+    public virtual void OnCompleted() => _flights.Clear();
+
+    // No implementation needed: Method is not called by the BaggageHandler class.
+    public virtual void OnError(Exception e)
+    {
+        // No implementation.
+    }
+
+    // Update information.
+    public virtual void OnNext(BaggageInfo info)
+    {
+        bool updated = false;
+
+        // Flight has unloaded its baggage; remove from the monitor.
+        if (info.Carousel == 0)
         {
-            Console.WriteLine($"French Fries Stand gets message: {message}");
+            string flightNumber = string.Format("{0,5}", info.FlightNumber);
+            for (int index = _flights.Count - 1; index >= 0; index--)
+            {
+                string flightInfo = _flights[index];
+                if (flightInfo.Substring(21, 5).Equals(flightNumber))
+                {
+                    updated = true;
+                    _flights.RemoveAt(index);
+                }
+            }
+        }
+        else
+        {
+            // Add flight if it doesn't exist in the collection.
+            string flightInfo = string.Format(_format, info.From, info.FlightNumber, info.Carousel);
+            if (!_flights.Contains(flightInfo))
+            {
+                _flights.Add(flightInfo);
+                updated = true;
+            }
+        }
+
+        if (updated)
+        {
+            _flights.Sort();
+            Console.WriteLine($"Arrivals information from {_name}");
+            foreach (string flightInfo in _flights)
+            {
+                Console.WriteLine(flightInfo);
+            }
+
+            Console.WriteLine();
         }
     }
 }
 
-namespace Mediator
+internal class Program
 {
-    public interface IMediator
+
+
+    static void Main(string[] args)
     {
-        void SendMessage(string message, SnackBar snackBar);
-    }
+        BaggageHandler provider = new BaggageHandler();
+        ArrivalsMonitor observer1 = new ArrivalsMonitor("BaggageClaimMonitor1");
+        ArrivalsMonitor observer2 = new ArrivalsMonitor("SecurityExit");
 
-    public class SnackBarMediator : IMediator
-    {
-        private HotDogStand hotDogStand;
-        private FrenchFriesStand friesStand;
+        provider.BaggageStatus(712, "Detroit", 3);
+        observer1.Subscribe(provider);
 
-        public HotDogStand HotDogStand
-        {
-            set { hotDogStand = value; }
-        }
+        provider.BaggageStatus(712, "Kalamazoo", 3);
+        provider.BaggageStatus(400, "New York-Kennedy", 1);
+        provider.BaggageStatus(712, "Detroit", 3);
+        observer2.Subscribe(provider);
 
-        public FrenchFriesStand FriesStand
-        {
-            set { friesStand = value; }
-        }
+        provider.BaggageStatus(511, "San Francisco", 2);
+        provider.BaggageStatus(712);
+        observer2.Unsubscribe();
 
-        public void SendMessage(string message, SnackBar snackBar)
-        {
-            if (snackBar == hotDogStand)
-                friesStand.Notify(message);
-            if (snackBar == friesStand)
-                hotDogStand.Notify(message);
-        }
-    }
-    class Program
-    {
-
-        public static void Main()
-        {
-            SnackBarMediator mediator = new SnackBarMediator();
-
-            HotDogStand leftKitchen = new HotDogStand(mediator);
-            FrenchFriesStand rightKitchen = new FrenchFriesStand(mediator);
-
-            mediator.HotDogStand = leftKitchen;
-            mediator.FriesStand = rightKitchen;
-
-            leftKitchen.Send("Can you send more cooking oil?");
-            rightKitchen.Send("Sure thing, Homer's on his way");
-
-            rightKitchen.Send("Do you have any extra soda? We've had a rush on them over here.");
-            leftKitchen.Send("Just a couple, we'll send Homer back with them");
-
-            Console.ReadKey();
-
-        }
+        provider.BaggageStatus(400);
+        provider.LastBaggageClaimed();
     }
 }
+

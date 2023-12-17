@@ -1,11 +1,42 @@
 {
   "version": 3,
   "targets": {
-    "net7.0": {}
+    "net7.0": {
+      "Memento/1.2.1": {
+        "type": "package",
+        "compile": {
+          "lib/net40/Memento.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net40/Memento.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Memento/1.2.1": {
+      "sha512": "XMRcsW2LOdiGpXcNwl6wm3mCTHpr53kJOYSbHoKsV0kMwEczgh5GogNuu3VQhz6q2Pkz2ERP31mpYv5x2chnQQ==",
+      "type": "package",
+      "path": "memento/1.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Memento.pdb",
+        "lib/net40/Memento.dll",
+        "lib/net40/Memento.xml",
+        "memento.1.2.1.nupkg.sha512",
+        "memento.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net7.0": []
+    "net7.0": [
+      "Memento >= 1.2.1"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\dtkac\\.nuget\\packages\\": {}
@@ -45,6 +76,12 @@
     "frameworks": {
       "net7.0": {
         "targetAlias": "net7.0",
+        "dependencies": {
+          "Memento": {
+            "target": "Package",
+            "version": "[1.2.1, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",
@@ -64,5 +101,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Memento 1.2.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "Memento",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    }
+  ]
 }

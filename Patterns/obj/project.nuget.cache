@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "dgSpecHash": "EWB58wfyM9fqsN1wP+bH3REdk0MywCJWCrK9jLeYfhpA8kNiI0D6TTKd5PTzV1Y9C0jU/QrOVMI0z9k3zWCX/A==",
+  "dgSpecHash": "HzH2SvxsqJSpu0tCvDfY5+kTW9F65k8hZzhwfv0Rdv6+rdiX0+IMu3Yx7Ww68XwIkF0e1qpcaFskx4zkPbX/CQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\dtkac\\OneDrive\\Рабочий стол\\college\\ARCH\\Patterns\\Patterns\\Patterns.csproj",
-  "expectedPackageFiles": [],
-  "logs": []
+  "expectedPackageFiles": [
+    "C:\\Users\\dtkac\\.nuget\\packages\\memento\\1.2.1\\memento.1.2.1.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Memento 1.2.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "Memento",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    }
+  ]
 }
